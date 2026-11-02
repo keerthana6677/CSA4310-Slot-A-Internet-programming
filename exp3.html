@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>QuickBus</title>
+<style>
+body{font-family:Arial;background:#f1f5f9;margin:0}
+header,footer,nav{background:#123047;color:white;text-align:center;padding:15px}
+nav{background:#087e8b}
+nav a{color:white;margin:10px;text-decoration:none}
+.container{background:white;max-width:800px;margin:20px auto;padding:20px}
+input,select,button,textarea{padding:10px;margin:5px}
+button{background:#087e8b;color:white;border:0;cursor:pointer}
+.bus,.ticket{border:1px solid #aaa;padding:12px;margin:10px 0}
+.seats{display:grid;grid-template-columns:repeat(4,50px);gap:8px}
+.selected{background:green}.booked{background:gray}
+</style>
+</head>
+<body>
+
+<header><h1>QuickBus</h1><p>Online Bus Booking</p></header>
+<nav>
+<a href="#search">Search</a>
+<a href="#history">Bookings</a>
+<a href="#comments">Comments</a>
+<a href="#admin">Admin</a>
+</nav>
+
+<div class="container">
+<h2>Login</h2>
+<input id="user" placeholder="Enter name">
+<button onclick="login()">Login</button>
+<p id="welcome"></p>
+
+<hr><h2 id="search">Search Buses</h2>
+<input id="from" placeholder="From">
+<input id="to" placeholder="To">
+<input type="date" id="date">
+<button onclick="searchBus()">Search</button>
+<div id="results"></div>
+
+<hr><h2>Seat Selection</h2>
+<p id="selected">Select a bus</p>
+<div id="seats" class="seats"></div>
+<input id="passenger" placeholder="Passenger name">
+<p id="total"></p>
+<button onclick="book()">Book Ticket</button>
+<p id="message"></p>
+
+<hr><h2 id="history">My Bookings</h2>
+<div id="list"></div>
+
+<hr><h2 id="comments">Comments</h2>
+<textarea id="comment" placeholder="Write comment"></textarea>
+<button onclick="addComment()">Post</button>
+<div id="commentsList"></div>
+
+<hr><h2 id="admin">Admin Panel</h2>
+<input id="bname" placeholder="Bus name">
+<input id="bfrom" placeholder="From">
+<input id="bto" placeholder="To">
+<input id="fare" type="number" placeholder="Fare">
+<input id="count" type="number" placeholder="Seats">
+<button onclick="addBus()">Add Bus</button>
+<div id="report"></div>
+<button onclick="report()">Booking Report</button>
+</div>
+<footer>QuickBus Ticket Booking System</footer>
+
+<script>
+let user="",selected=null,chosen=[],id=1,bookings=[],comments=[];
+let buses=[
+{id:1,name:"Chennai Express",from:"Chennai",to:"Bengaluru",fare:850,count:8},
+{id:2,name:"City Travels",from:"Chennai",to:"Hyderabad",fare:1200,count:8}
+];
+
+function login(){
+user=document.getElementById("user").value.trim();
+if(!user)return alert("Enter name");
+document.getElementById("welcome").innerText="Welcome "+user;
+show();
+}
+
+function searchBus(){
+let f=document.getElementById("from").value.toLowerCase();
+let t=document.getElementById("to").value.toLowerCase();
+if(!f||!t||!document.getElementById("date").value)return alert("Enter journey details");
+let found=buses.filter(b=>b.from.toLowerCase()==f&&b.to.toLowerCase()==t);
+document.getElementById("results").innerHTML=found.map(b=>
+`<div class="bus">${b.name} | ₹${b.fare}
+<button onclick="selectBus(${b.id})">Select</button></div>`).join("")||"No buses found";
+}
+
+function selectBus(n){
+selected=buses.find(b=>b.id==n);chosen=[];
+document.getElementById("selected").innerText=selected.name;
+render();
+}
+
+function render(){
+let booked=bookings.filter(b=>b.bus==selected.id&&b.date==date.value&&b.status=="Booked").flatMap(b=>b.seats);
+seats.innerHTML=Array.from({length:selected.count},(_,i)=>{
+let n=i+1,used=booked.includes(n);
+return `<button class="${used?'booked':chosen.includes(n)?'selected':''}" ${used?'disabled':''} onclick="toggle(${n})">${n}</button>`;
+}).join("");
+total.innerText="Selected: "+chosen.join(", ")+" | Total: ₹"+chosen.length*selected.fare;
+}
+
+function toggle(n){
+chosen=chosen.includes(n)?chosen.filter(x=>x!=n):[...chosen,n];
+render();
+}
+
+function book(){
+if(!user||!selected||!chosen.length||!passenger.value.trim())return alert("Enter details and select seats");
+let d=date.value;
+let b={id:id++,user,name:passenger.value,bus:selected.id,busName:selected.name,date:d,seats:[...chosen],fare:chosen.length*selected.fare,status:"Booked"};
+bookings.push(b);chosen=[];
+message.innerText="Booking ID: "+b.id+" | Fare: ₹"+b.fare;
+show();render();searchBus();
+}
+
+function show(){
+list.innerHTML=bookings.filter(b=>b.user==user).map(b=>
+`<div class="ticket">ID: ${b.id}<br>${b.name} - ${b.busName}<br>Date: ${b.date}<br>Seats: ${b.seats}<br>Fare: ₹${b.fare}<br>Status: ${b.status}
+${b.status=="Booked"?`<button onclick="cancel(${b.id})">Cancel</button>`:""}</div>`).join("")||"No bookings";
+}
+
+function cancel(n){
+let b=bookings.find(x=>x.id==n&&x.user==user);
+if(b&&confirm("Cancel booking?")){b.status="Cancelled";show();if(selected)render();}
+}
+
+function addComment(){
+if(!user)return alert("Login first");
+let c=comment.value.trim();if(!c)return alert("Enter comment");
+comments.push(user+": "+c);
+commentsList.innerHTML=comments.map(x=>`<p>${safe(x)}</p>`).join("");
+comment.value="";
+}
+
+function safe(s){
+return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function addBus(){
+if(user.toLowerCase()!="admin")return alert("Admin login required");
+let name=bname.value.trim(),from=bfrom.value.trim(),to=bto.value.trim();
+let fare=Number(document.getElementById("fare").value),count=Number(document.getElementById("count").value);
+if(!name||!from||!to||fare<=0||!Number.isInteger(count)||count<1)return alert("Enter valid details");
+buses.push({id:Date.now(),name,from,to,fare,count});
+alert("Bus added");
+}
+
+function report(){
+if(user.toLowerCase()!="admin")return alert("Admin login required");
+reportBox=document.getElementById("report");
+reportBox.innerHTML="Total bookings: "+bookings.length+
+"<br>Confirmed: "+bookings.filter(b=>b.status=="Booked").length+
+"<br>Cancelled: "+bookings.filter(b=>b.status=="Cancelled").length;
+}
+</script>
+</body>
+</html>

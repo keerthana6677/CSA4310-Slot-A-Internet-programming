@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>RailConnect</title>
+<style>
+body{font-family:Arial;background:#f1f5f9;margin:0;color:#123}
+header,nav{text-align:center;padding:15px;background:#123047;color:white}
+nav{background:#087e8b}
+nav a{color:white;margin:10px;text-decoration:none}
+.container{background:white;max-width:800px;margin:20px auto;padding:20px;border-radius:10px}
+input,select,button{padding:10px;margin:5px}
+button{background:#087e8b;color:white;border:0;cursor:pointer}
+.train,.ticket{border:1px solid #aaa;padding:12px;margin:10px 0}
+</style>
+</head>
+<body>
+
+<header><h1>RailConnect</h1><p>Train Reservation System</p></header>
+<nav>
+<a href="#search">Search</a>
+<a href="#tickets">My Tickets</a>
+<a href="#pnr">PNR</a>
+<a href="#admin">Admin</a>
+</nav>
+
+<div class="container">
+<h2>Passenger Login</h2>
+<input id="user" placeholder="Passenger Name">
+<button onclick="login()">Login</button>
+<p id="welcome"></p>
+
+<hr>
+<h2 id="search">Search Trains</h2>
+<input id="from" placeholder="From">
+<input id="to" placeholder="To">
+<input type="date" id="date">
+<select id="cls">
+<option>Sleeper</option><option>3AC</option>
+<option>2AC</option><option>1AC</option>
+</select>
+<button onclick="searchTrain()">Search</button>
+<div id="results"></div>
+
+<hr>
+<h2>Book Ticket</h2>
+<p id="selected">Select a train</p>
+<input id="pname" placeholder="Passenger Name">
+<input id="age" type="number" placeholder="Age">
+<button onclick="book()">Reserve Ticket</button>
+<p id="message"></p>
+
+<hr>
+<h2 id="tickets">My Tickets</h2>
+<div id="list">Login to view tickets.</div>
+
+<hr>
+<h2 id="pnr">Check PNR</h2>
+<input id="pnrInput" placeholder="Enter PNR">
+<button onclick="checkPNR()">Check</button>
+<p id="pnrResult"></p>
+
+<hr>
+<h2 id="admin">Admin Panel</h2>
+<p>Login using username: admin</p>
+<input id="tname" placeholder="Train Name">
+<input id="tfrom" placeholder="From">
+<input id="tto" placeholder="To">
+<input id="seats" type="number" placeholder="Seats">
+<button onclick="addTrain()">Add Train</button>
+</div>
+
+<script>
+let trains=[
+{id:1,name:"Chennai Express",from:"Chennai",to:"Bengaluru",seats:10},
+{id:2,name:"Coastal Express",from:"Chennai",to:"Hyderabad",seats:8}
+];
+let user="",selected=null,bookings=[],pnr=1001;
+
+function login(){
+user=document.getElementById("user").value.trim();
+if(!user)return alert("Enter name");
+document.getElementById("welcome").innerText="Welcome "+user;
+showTickets();
+}
+
+function searchTrain(){
+let f=document.getElementById("from").value.toLowerCase();
+let t=document.getElementById("to").value.toLowerCase();
+let d=document.getElementById("date").value;
+if(!f||!t||!d)return alert("Enter journey details");
+
+let found=trains.filter(x=>x.from.toLowerCase()==f&&x.to.toLowerCase()==t);
+document.getElementById("results").innerHTML=found.map(x=>
+`<div class="train">
+<h3>${x.name}</h3>
+<p>${x.from} to ${x.to}</p>
+<p>Seats: ${x.seats}</p>
+<button onclick="selectTrain(${x.id})">Select</button>
+</div>`).join("")||"No trains found";
+}
+
+function selectTrain(id){
+selected=trains.find(x=>x.id==id);
+document.getElementById("selected").innerText=selected.name;
+}
+
+function book(){
+if(!user||!selected)return alert("Login and select train");
+let name=document.getElementById("pname").value;
+let age=Number(document.getElementById("age").value);
+let date=document.getElementById("date").value;
+if(!name||!Number.isInteger(age)||age<1||age>120||!date)
+return alert("Enter valid passenger details");
+if(selected.seats<=0)return alert("No seats available");
+
+let b={pnr:pnr++,user,name,age,train:selected.name,date,status:"Confirmed"};
+bookings.push(b);
+selected.seats--;
+document.getElementById("message").innerText="Ticket booked! PNR: "+b.pnr;
+showTickets();
+searchTrain();
+}
+
+function showTickets(){
+let mine=bookings.filter(b=>b.user==user);
+document.getElementById("list").innerHTML=mine.map(b=>
+`<div class="ticket">
+PNR: ${b.pnr}<br>
+Passenger: ${b.name}<br>
+Train: ${b.train}<br>
+Date: ${b.date}<br>
+Status: ${b.status}
+${b.status=="Confirmed"?`<br><button onclick="cancel(${b.pnr})">Cancel</button>`:""}
+</div>`).join("")||"No tickets found";
+}
+
+function checkPNR(){
+let b=bookings.find(x=>x.pnr==document.getElementById("pnrInput").value);
+document.getElementById("pnrResult").innerText=b?
+"PNR: "+b.pnr+" | "+b.train+" | "+b.status:"PNR not found";
+}
+
+function cancel(id){
+let b=bookings.find(x=>x.pnr==id&&x.user==user);
+if(b&&confirm("Cancel ticket?")){
+b.status="Cancelled";
+let train=trains.find(x=>x.name==b.train);
+if(train)train.seats++;
+showTickets();
+searchTrain();
+}
+}
+
+function addTrain(){
+if(user.toLowerCase()!="admin")return alert("Admin login required");
+let name=document.getElementById("tname").value;
+let from=document.getElementById("tfrom").value;
+let to=document.getElementById("tto").value;
+let seats=Number(document.getElementById("seats").value);
+if(!name||!from||!to||!Number.isInteger(seats)||seats<1)
+return alert("Enter valid train details");
+trains.push({id:Date.now(),name,from,to,seats});
+alert("Train added successfully");
+}
+</script>
+</body>
+</html>

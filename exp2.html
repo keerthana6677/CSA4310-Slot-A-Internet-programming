@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>StayEase Hotel</title>
+<style>
+body{font-family:Arial;background:#f4f6f9;margin:0}
+header,footer,nav{background:#123047;color:white;text-align:center;padding:15px}
+nav{background:#087e8b}
+nav a{color:white;margin:10px;text-decoration:none}
+.container{background:white;max-width:800px;margin:20px auto;padding:20px}
+input,select,button{padding:10px;margin:5px}
+button{background:#087e8b;color:white;border:0;cursor:pointer}
+.room{border:1px solid #aaa;padding:12px;margin:10px 0}
+</style>
+</head>
+<body>
+
+<header><h1>StayEase Hotel</h1><p>Hotel Booking System</p></header>
+<nav>
+<a href="#search">Rooms</a>
+<a href="#history">Bookings</a>
+<a href="#admin">Admin</a>
+<a href="#contact">Contact</a>
+</nav>
+
+<div class="container">
+<h2>Login</h2>
+<input id="username" placeholder="Enter name">
+<button onclick="login()">Login</button>
+<p id="welcome"></p>
+
+<hr><h2 id="search">Search Rooms</h2>
+Check-in: <input type="date" id="start">
+Check-out: <input type="date" id="end">
+<input type="number" id="guests" value="1" min="1" placeholder="Guests">
+<button onclick="searchRooms()">Search</button>
+<div id="rooms"></div>
+
+<hr><h2 id="history">My Bookings</h2>
+<div id="historyList"></div>
+
+<hr><h2 id="admin">Admin Panel</h2>
+<select id="type">
+<option>Standard</option><option>Deluxe</option>
+<option>Suite</option><option>Family</option>
+</select>
+<input type="number" id="price" placeholder="New price">
+<input type="number" id="quantity" placeholder="Room quantity">
+<button onclick="updateRoom()">Update Room</button>
+<p id="adminMessage"></p>
+
+<hr><h2 id="contact">Contact Us</h2>
+<input id="message" placeholder="Enter message">
+<button onclick="contact()">Send</button>
+<p id="result"></p>
+</div>
+
+<footer>© 2026 StayEase Hotel</footer>
+
+<script>
+let user="",id=1,bookings=[];
+let rooms=[
+{type:"Standard",price:1500,count:5},
+{type:"Deluxe",price:2500,count:4},
+{type:"Suite",price:4500,count:2},
+{type:"Family",price:3500,count:3}
+];
+
+function login(){
+user=username.value.trim();
+if(!user)return alert("Enter name");
+welcome.innerText="Welcome "+user;
+showBookings();
+}
+
+function nights(a,b){
+return (new Date(b)-new Date(a))/86400000;
+}
+
+function available(r,a,b){
+let used=bookings.filter(x=>x.type==r&&x.status=="Confirmed"&&a<x.end&&b>x.start).length;
+return rooms.find(x=>x.type==r).count-used;
+}
+
+function searchRooms(){
+let a=start.value,b=end.value;
+if(!a||!b||b<=a)return alert("Enter valid dates");
+roomsList=rooms.map(r=>{
+let n=nights(a,b),free=available(r.type,a,b);
+return `<div class="room">
+<h3>${r.type} Room</h3>
+Price: ₹${r.price}/night<br>
+Available: ${free}<br>
+Total: ₹${r.price*n}<br>
+<button onclick="book('${r.type}')" ${free<=0?"disabled":""}>Book</button>
+</div>`;
+}).join("");
+document.getElementById("rooms").innerHTML=roomsList;
+}
+
+function book(type){
+if(!user)return alert("Login first");
+let a=start.value,b=end.value,g=Number(guests.value);
+if(!a||!b||b<=a||g<1)return alert("Enter valid details");
+if(available(type,a,b)<=0)return alert("No rooms available");
+let r=rooms.find(x=>x.type==type);
+bookings.push({id:id++,user,type,start:a,end:b,guests:g,
+total:r.price*nights(a,b),status:"Confirmed"});
+alert("Booking successful");
+showBookings();searchRooms();
+}
+
+function showBookings(){
+historyList.innerHTML=bookings.filter(x=>x.user==user).map(x=>
+`<div class="room">
+Booking ID: ${x.id}<br>
+Room: ${x.type}<br>
+Dates: ${x.start} to ${x.end}<br>
+Guests: ${x.guests}<br>
+Total: ₹${x.total}<br>
+Status: ${x.status}<br>
+${x.status=="Confirmed"?`
+<button onclick="modify(${x.id})">Modify</button>
+<button onclick="cancel(${x.id})">Cancel</button>`:""}
+</div>`).join("")||"No bookings found";
+}
+
+function modify(n){
+let x=bookings.find(b=>b.id==n&&b.user==user);
+if(!x||x.status!="Confirmed")return;
+let a=prompt("New check-in date",x.start);
+let b=prompt("New check-out date",x.end);
+if(!a||!b||b<=a)return alert("Invalid dates");
+if(available(x.type,a,b)<=0)return alert("Room unavailable");
+x.start=a;x.end=b;
+x.total=rooms.find(r=>r.type==x.type).price*nights(a,b);
+showBookings();searchRooms();
+}
+
+function cancel(n){
+let x=bookings.find(b=>b.id==n&&b.user==user);
+if(x&&confirm("Cancel booking?")){
+x.status="Cancelled";showBookings();searchRooms();
+}
+}
+
+function updateRoom(){
+if(user.toLowerCase()!="admin")return alert("Admin login required");
+let r=rooms.find(x=>x.type==type.value);
+let p=Number(price.value),q=Number(quantity.value);
+if(p<=0||!Number.isFinite(p)||!Number.isInteger(q)||q<0)
+return alert("Enter valid price and quantity");
+r.price=p;r.count=q;
+adminMessage.innerText="Room updated successfully";
+searchRooms();
+}
+
+function contact(){
+result.innerText=message.value.trim()?"Message received (demo).":"Enter a message";
+}
+</script>
+</body>
+</html>

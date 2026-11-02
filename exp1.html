@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Library Management</title>
+<style>
+body{font-family:Arial;background:#eef2f5;padding:20px}
+.container{background:white;padding:20px;max-width:700px;margin:auto;border-radius:10px}
+input,select,button{padding:9px;margin:5px}
+button{background:teal;color:white;border:0;cursor:pointer}
+.book{border:1px solid #ccc;padding:10px;margin:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Library Management System</h2>
+
+<h3>Login</h3>
+<input id="user" placeholder="Username">
+<select id="role">
+<option>Student</option><option>Admin</option>
+</select>
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+
+<h3>Search Books</h3>
+<input id="search" placeholder="Search book" oninput="showBooks()">
+<div id="books"></div>
+
+<div id="admin" hidden>
+<h3>Add Book</h3>
+<input id="title" placeholder="Book title">
+<input id="author" placeholder="Author">
+<button onclick="addBook()">Add</button>
+</div>
+
+<h3>Borrow History</h3>
+<div id="history"></div>
+
+<h3>Study Materials</h3>
+<select id="year">
+<option>1</option><option>2</option><option>3</option><option>4</option>
+</select>
+<select id="sem">
+<option>1</option><option>2</option>
+</select>
+<button onclick="material()">Search</button>
+<div id="result"></div>
+
+<h3>Contact Librarian</h3>
+<input id="contact" placeholder="Enter message">
+<button onclick="send()">Send</button>
+<p id="reply"></p>
+</div>
+
+<script>
+let books=[
+{id:1,title:"Web Development",author:"Jon Duckett",available:true},
+{id:2,title:"Python Programming",author:"Mark Lutz",available:true},
+{id:3,title:"Database Systems",author:"Raghu Ramakrishnan",available:true}
+];
+let history=[],user="",role="Student";
+
+function login(){
+ user=document.getElementById("user").value.trim();
+ role=document.getElementById("role").value;
+ if(!user)return alert("Enter username");
+ document.getElementById("msg").innerText="Welcome "+user;
+ document.getElementById("admin").hidden=role!=="Admin";
+ showBooks();showHistory();
+}
+
+function showBooks(){
+ let q=document.getElementById("search").value.toLowerCase();
+ document.getElementById("books").innerHTML=books.filter(b=>
+ (b.title+" "+b.author).toLowerCase().includes(q)).map(b=>`
+ <div class="book">
+ <b>${b.title}</b> - ${b.author}<br>
+ Status: ${b.available?"Available":"Issued"}<br>
+ ${role==="Student"?`<button onclick="borrow(${b.id})" ${!user||!b.available?"disabled":""}>Issue</button>`:""}
+ ${role==="Admin"?`<button onclick="returnBook(${b.id})">Return</button>
+ <button onclick="removeBook(${b.id})">Delete</button>`:""}
+ </div>`).join("")||"No books found";
+}
+
+function borrow(id){
+ let b=books.find(x=>x.id===id);
+ if(!user||!b||!b.available)return;
+ b.available=false;
+ history.push({user,book:b.title,date:new Date().toLocaleDateString()});
+ showBooks();showHistory();
+}
+
+function returnBook(id){
+ let b=books.find(x=>x.id===id);
+ let h=history.find(x=>x.book===b.title&&!x.returned);
+ if(!h)return alert("No active issue");
+ h.returned=true;b.available=true;
+ showBooks();showHistory();
+}
+
+function removeBook(id){
+ books=books.filter(b=>b.id!==id);showBooks();
+}
+
+function addBook(){
+ let title=document.getElementById("title").value;
+ let author=document.getElementById("author").value;
+ if(!title||!author)return alert("Enter book details");
+ books.push({id:Date.now(),title,author,available:true});
+ showBooks();
+}
+
+function showHistory(){
+ document.getElementById("history").innerHTML=
+ history.filter(h=>h.user===user).map(h=>
+ `<p>${h.book} - ${h.returned?"Returned":"Borrowed"} (${h.date})</p>`
+ ).join("")||"No history";
+}
+
+function material(){
+ document.getElementById("result").innerHTML=
+ `Year ${document.getElementById("year").value},
+ Semester ${document.getElementById("sem").value}<br>
+ <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" download>Download PDF</a>`;
+}
+
+function send(){
+ let m=document.getElementById("contact").value;
+ document.getElementById("reply").innerText=
+ m.trim()?"Message recorded.":"Enter a message";
+}
+</script>
+</body>
+</html>

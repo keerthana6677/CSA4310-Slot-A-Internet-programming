@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farmer Veterinary System</title>
+<style>
+body{font-family:Arial;background:#eef5ee;margin:0;padding:20px}
+.container{max-width:850px;margin:auto;background:white;padding:20px;border-radius:10px}
+h1,h2{color:#176b45}
+input,select,textarea,button{padding:10px;margin:5px;width:90%}
+button{background:#198754;color:white;border:0;cursor:pointer;width:auto}
+.item{border:1px solid #ccc;padding:12px;margin:10px 0;border-radius:6px}
+.hidden{display:none}
+nav button{margin:4px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Farmer Veterinary Management System</h1>
+
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('login')">Login</button>
+<button onclick="logout()">Logout</button>
+</nav>
+
+<main>
+<section id="home">
+<h2>Welcome</h2>
+<div id="doctorList"></div>
+<div id="cureList"></div>
+<div id="newsList"></div>
+</section>
+
+<section id="register" class="hidden">
+<h2>Registration</h2>
+<select id="role">
+<option value="farmer">Farmer</option>
+<option value="doctor">Doctor</option>
+</select>
+<input id="regName" placeholder="Name">
+<input id="regEmail" type="email" placeholder="Email">
+<input id="regPhone" placeholder="Phone">
+<input id="regArea" placeholder="Area">
+<input id="regPass" type="password" placeholder="Password">
+<input id="bankDetails" placeholder="Bank details (optional)">
+<button onclick="register()">Register</button>
+<p id="regMsg"></p>
+</section>
+
+<section id="login" class="hidden">
+<h2>Login</h2>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<div id="otpArea" class="hidden">
+<p id="otpMessage"></p>
+<input id="otp" placeholder="Enter OTP">
+<button onclick="verifyOTP()">Verify OTP</button>
+</div>
+<p id="loginMsg"></p>
+</section>
+
+<section id="farmer" class="hidden">
+<h2>Farmer Dashboard</h2>
+<p id="farmerWelcome"></p>
+
+<h3>Submit Complaint</h3>
+<input id="animal" placeholder="Animal name">
+<input id="symptoms" placeholder="Symptoms">
+<textarea id="description" placeholder="Describe the problem"></textarea>
+<input id="media" type="file" accept="image/*,audio/*,video/*">
+<button onclick="postComplaint()">Submit Complaint</button>
+<p id="complaintMsg"></p>
+
+<div id="myComplaints"></div>
+<div id="payments"></div>
+
+<h3>Doctor Subscription</h3>
+<p id="paymentDoctor"></p>
+<div id="payment" class="hidden">
+<select id="paymentMethod">
+<option>UPI</option>
+<option>Bank Transfer</option>
+<option>Government CVH - Free</option>
+</select>
+<input id="paymentAmount" type="number" placeholder="Amount">
+<button onclick="makePayment()">Subscribe</button>
+<p id="paymentMsg"></p>
+</div>
+
+<h3>Feedback</h3>
+<textarea id="feedback" placeholder="Enter feedback"></textarea>
+<button onclick="postFeedback()">Submit Feedback</button>
+</section>
+
+<section id="doctor" class="hidden">
+<h2>Doctor Dashboard</h2>
+<p id="doctorWelcome"></p>
+<div id="doctorComplaints"></div>
+<div id="doctorPayments"></div>
+<div id="doctorFeedback"></div>
+
+<h3>Add Animal Cure</h3>
+<input id="disease" placeholder="Disease">
+<textarea id="cure" placeholder="Details"></textarea>
+<input id="prescription" placeholder="General advice">
+<button onclick="addCure()">Add Cure</button>
+
+<h3>Publish News</h3>
+<input id="newsTitle" placeholder="News title">
+<textarea id="newsText" placeholder="News details"></textarea>
+<button onclick="addNews()">Publish News</button>
+</section>
+
+<section id="report" class="hidden">
+<h2>Complaint Reports</h2>
+<div id="reportContent"></div>
+</section>
+</main>
+</div>
+
+<script src="app19.js"></script>
+</body>
+</html>

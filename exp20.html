@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentRide - Vehicle Rental</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f5f8;color:#263238}
+header{background:#173b63;color:white;text-align:center;padding:22px}
+nav{background:#102c49;padding:12px;text-align:center}
+nav button{padding:10px;margin:4px;border:0;border-radius:5px;cursor:pointer}
+main{max-width:1000px;margin:25px auto;padding:15px}
+section,.card{background:white;padding:20px;margin-bottom:20px;border-radius:10px;box-shadow:0 2px 8px #d4dce5}
+input,select,textarea{width:100%;padding:11px;margin:7px 0;border:1px solid #bbb;border-radius:5px}
+.action{background:#1769aa;color:white;border:0;padding:11px 17px;border-radius:5px;cursor:pointer;margin:4px}
+.danger{background:#b52b36;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+.vehicle{border:1px solid #ddd;border-radius:8px;padding:14px}
+.vehicle img{width:100%;height:140px;object-fit:cover}
+.hidden{display:none}
+footer{text-align:center;background:#102c49;color:white;padding:15px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🚘 RentRide</h1>
+<p>Find • Book • Drive</p>
+</header>
+
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('register')">Register</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('search')">Search Vehicles</button>
+<button onclick="show('dashboard')">My Dashboard</button>
+<button onclick="show('admin')">Admin</button>
+<button onclick="logout()">Logout</button>
+</nav>
+
+<main>
+
+<section id="home">
+<h2>Welcome to RentRide</h2>
+<p>Book cars, SUVs and trucks easily with RentRide.</p>
+<button class="action" onclick="show('search')">Explore Vehicles</button>
+<div id="homeVehicles" class="grid"></div>
+</section>
+
+<section id="register" class="hidden">
+<h2>User Registration</h2>
+<input id="regName" placeholder="Full Name">
+<input id="regEmail" type="email" placeholder="Email">
+<input id="regPhone" placeholder="Customer Number">
+<input id="regAddress" placeholder="Address">
+<input id="regPassword" type="password" placeholder="Password">
+<button class="action" onclick="register()">Register</button>
+<p id="regMsg"></p>
+</section>
+
+<section id="login" class="hidden">
+<h2>User Login</h2>
+<input id="loginEmail" type="email" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+<button class="action" onclick="login()">Login</button>
+<p id="loginMsg"></p>
+</section>
+
+<section id="search" class="hidden">
+<h2>Search Vehicles</h2>
+<input id="searchText" placeholder="Search vehicle name or location" oninput="renderVehicles()">
+<select id="typeFilter" onchange="renderVehicles()">
+<option value="">All Vehicle Types</option>
+<option>Car</option><option>SUV</option><option>Truck</option>
+</select>
+<input id="locationFilter" placeholder="Enter location" oninput="renderVehicles()">
+<div id="vehicleList" class="grid"></div>
+</section>
+
+<section id="booking" class="hidden">
+<h2>Vehicle Booking</h2>
+<p id="selectedVehicle"></p>
+<input id="customerName" placeholder="Customer Name">
+<input id="customerNumber" placeholder="Customer Number">
+<input id="customerAddress" placeholder="Address">
+<label>Rental Start Date</label>
+<input id="startDate" type="date">
+<label>Rental End Date</label>
+<input id="endDate" type="date">
+<label>Pick-up Time</label>
+<input id="pickupTime" type="time">
+<input id="bookingLocation" placeholder="Pickup Location">
+<button class="action" onclick="makeBooking()">Confirm Booking Request</button>
+<p id="bookingMsg"></p>
+</section>
+
+<section id="dashboard" class="hidden">
+<h2>My Profile</h2>
+<div id="profile"></div>
+<h3>My Bookings / Past Appointments</h3>
+<div id="myBookings"></div>
+
+<div class="card">
+<h3>Check-in Form</h3>
+<input id="checkinBookingId" type="number" placeholder="Booking ID">
+<textarea id="checkinNotes" placeholder="Check-in details"></textarea>
+<button class="action" onclick="submitCheckin()">Submit Check-in</button>
+<p id="checkinMsg"></p>
+</div>
+
+<div class="card">
+<h3>Write a Review</h3>
+<input id="reviewBookingId" type="number" placeholder="Booking ID">
+<select id="rating">
+<option value="5">5 Stars</option>
+<option value="4">4 Stars</option>
+<option value="3">3 Stars</option>
+<option value="2">2 Stars</option>
+<option value="1">1 Star</option>
+</select>
+<textarea id="reviewText" placeholder="Write your review"></textarea>
+<button class="action" onclick="addReview()">Submit Review</button>
+</div>
+</section>
+
+<section id="admin" class="hidden">
+<h2>Admin Login</h2>
+<p>Demo username: admin | Password: admin123</p>
+<input id="adminUsername" placeholder="Admin username">
+<input id="adminPassword" type="password" placeholder="Admin password">
+<button class="action" onclick="adminLogin()">Login</button>
+
+<div id="adminPanel" class="hidden">
+<h3>Add Vehicle</h3>
+<input id="vehicleName" placeholder="Vehicle Name">
+<select id="vehicleType">
+<option>Car</option><option>SUV</option><option>Truck</option>
+</select>
+<input id="vehicleLocation" placeholder="Location">
+<input id="vehiclePrice" type="number" placeholder="Price per day">
+<input id="vehicleImage" type="file" accept="image/*">
+<textarea id="vehicleDescription" placeholder="Vehicle Description"></textarea>
+<button class="action" onclick="addVehicle()">Add Vehicle</button>
+
+<h3>Manage Vehicles</h3>
+<div id="adminVehicles" class="grid"></div>
+
+<h3>Manage Booking Details</h3>
+<div id="adminBookings"></div>
+
+<h3>Customer Reviews</h3>
+<div id="adminReviews"></div>
+</div>
+</section>
+
+</main>
+
+<footer>RentRide — Online Vehicle Rental System</footer>
+<script src="app20.js"></script>
+</body>
+</html>

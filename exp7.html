@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Glow Beauty Parlour</title>
+<style>
+body{font-family:Arial;background:#fff4f8;margin:0;text-align:center}
+header,footer{background:#d94f87;color:white;padding:15px}
+section{background:white;margin:15px auto;padding:20px;max-width:600px;border-radius:10px}
+input,select,button,textarea{padding:10px;margin:6px;width:85%}
+button{background:#d94f87;color:white;border:0;cursor:pointer}
+nav button{width:auto}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header><h1>✿ Glow Beauty Parlour</h1>
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('services')">Services</button>
+<button onclick="show('booking')">Book</button>
+<button onclick="show('account')">Login</button>
+<button onclick="show('manager')">Manager</button>
+<button onclick="show('feedback')">Feedback</button>
+</nav></header>
+
+<section id="home"><h2>Welcome to Glow Beauty!</h2>
+<p>Beauty, Style and Confidence</p></section>
+
+<section id="services" class="hidden">
+<h2>Our Services</h2><div id="list"></div></section>
+
+<section id="booking" class="hidden">
+<h2>Book Appointment</h2>
+<input id="name" placeholder="Your Name">
+<input id="phone" placeholder="Phone Number">
+<select id="service"></select>
+<input type="date" id="date">
+<select id="time">
+<option>10:00 AM</option><option>11:00 AM</option>
+<option>12:00 PM</option><option>2:00 PM</option>
+<option>3:00 PM</option><option>4:00 PM</option>
+</select>
+<button onclick="book()">Confirm Booking</button>
+<p id="result"></p></section>
+
+<section id="account" class="hidden">
+<h2>Login / Register</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login / Register</button>
+<p id="welcome"></p></section>
+
+<section id="manager" class="hidden">
+<h2>Manager Dashboard</h2>
+<div id="appointments"></div></section>
+
+<section id="feedback" class="hidden">
+<h2>Customer Feedback</h2>
+<input id="review" placeholder="Your Name">
+<textarea id="comment" placeholder="Write feedback"></textarea>
+<button onclick="feedback()">Submit</button>
+<div id="reviews"></div></section>
+
+<footer>© 2026 Glow Beauty Parlour</footer>
+
+<script>
+let services=["Haircut - ₹500","Facial - ₹800","Manicure - ₹400","Bridal Makeup - ₹3500"];
+let bookings=[],users=[],reviews=[];
+
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+function display(){
+list.innerHTML=services.map(s=>"<p>"+s+"</p>").join("");
+service.innerHTML=services.map(s=>"<option>"+s+"</option>").join("");
+}
+function book(){
+let n=name.value,d=date.value,t=time.value;
+if(!n||!phone.value||!d){alert("Fill all details");return;}
+if(d<new Date().toISOString().slice(0,10)){alert("Choose a future date");return;}
+if(bookings.some(b=>b.date===d&&b.time===t)){alert("Time already booked");return;}
+bookings.push({name:n,phone:phone.value,service:service.value,date:d,time:t});
+result.innerText="Appointment booked successfully!";
+}
+function login(){
+if(!user.value||!pass.value){alert("Enter details");return;}
+welcome.innerText="Welcome "+user.value;
+users.push(user.value);
+}
+function manager(){
+appointments.innerHTML=bookings.map(b=>
+`<p>${b.name} | ${b.service} | ${b.date} | ${b.time}</p>`).join("");
+}
+function feedback(){
+if(!review.value||!comment.value){alert("Enter feedback");return;}
+reviews.push(review.value+": "+comment.value);
+document.getElementById("reviews").innerHTML=reviews.map(r=>"<p>"+r+"</p>").join("");
+}
+document.querySelector("button[onclick=\"show('manager')\"]").onclick=()=>{
+show('manager');manager();
+};
+display();
+</script>
+</body>
+</html>
